@@ -5,7 +5,7 @@ const socketio = require('socket.io');
 const cors = require('cors');
 const app = express();
 
-const whitelist = ["http://localhost:3000"];
+const whitelist = ["https://tictactoegamej.netlify.app"];
 
 const corsOptions = {
     origin: function (origin, callback) {
