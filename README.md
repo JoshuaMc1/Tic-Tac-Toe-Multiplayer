@@ -61,6 +61,6 @@ Si deseas contribuir a este proyecto, puedes seguir los siguientes pasos:
 
 ## License
 
-Este proyecto está bajo la Licencia [MIT](https://choosealicense.com/licenses/mit/). Puedes consultar el archivo LICENSE para más detalles.
+Este proyecto está bajo la Licencia [MIT](https://github.com/JoshuaMc1/Tic-Tac-Toe/blob/main/LICENSE). Puedes consultar el archivo LICENSE para más detalles.
 
 
