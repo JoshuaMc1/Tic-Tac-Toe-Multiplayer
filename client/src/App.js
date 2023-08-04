@@ -108,7 +108,7 @@ const RoomGame = () => {
   const { name, roomCode } = queryString.parse(location.search);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io('https://tictactoeserver.netlify.app', {
       transports: ['websocket'],
       autoConnect: true,
       cors: {
