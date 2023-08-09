@@ -17,6 +17,8 @@ El juego cuenta con una interfaz de usuario intuitiva y atractiva, que permite a
 - Movimientos en el tablero visibles en tiempo real.
 - Desarrollado utilizando React y NodeJs.
 - Conexión websocket para la comunicación en tiempo real.
+- Chat en tiempo real con websocket
+
 ## Requisitos de instalación
 Para ejecutar el juego Tic Tac Toe - Multijugador, se deben seguir los siguientes pasos:
 
