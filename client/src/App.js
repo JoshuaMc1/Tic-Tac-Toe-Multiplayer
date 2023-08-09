@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Link
 } from 'react-router-dom';
@@ -7,6 +7,8 @@ import io from 'socket.io-client';
 import './App.css';
 import Alert from './components/Alert';
 import Spinner from './components/Spinner';
+import { AiOutlineSend } from 'react-icons/ai';
+import InputEmoji from "react-input-emoji";
 
 const Home = () => {
   const [name, setName] = useState('');
@@ -97,6 +99,92 @@ const Home = () => {
   );
 };
 
+const Chat = ({ websocket, name, roomCode }) => {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesRef = useRef(null);
+
+  useEffect(() => {
+    const handleReceivedMessage = (message) => {
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+
+        if (lastMessage && lastMessage.name === message.name) {
+          const updatedMessages = prevMessages.slice(0, -1);
+
+          const updatedLastMessage = {
+            ...lastMessage,
+            messages: [...lastMessage.messages, message.message],
+          };
+
+          return [...updatedMessages, updatedLastMessage];
+        } else {
+          return [...prevMessages, { name: message.name, messages: [message.message] }];
+        }
+      });
+
+      if (messagesRef.current) {
+        setTimeout(() => {
+          messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }, 0);
+      }
+    };
+
+    websocket.on('receivedMessage', handleReceivedMessage);
+
+    return () => {
+      websocket.off('receivedMessage', handleReceivedMessage);
+    };
+  }, [websocket]);
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() !== '') {
+      const message = { name, message: newMessage };
+
+      websocket.emit('chatMessage', { roomCode, ...message });
+      setNewMessage('');
+    }
+  };
+
+  return (
+    <div className="bg-white shadow-md rounded-lg p-4 w-96">
+      <div className="mb-4">
+        <div className="font-bold text-2xl">TicTacToe Chat</div>
+      </div>
+      <div className="mb-2 min-h-[250px] max-h-[250px] overflow-y-scroll p-2" ref={messagesRef}>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`rounded-lg p-2 mb-1 ${message.name === name ? 'bg-blue-200' : 'bg-gray-300'
+              }`}
+          >
+            <div className={`font-semibold ${message.name === name ? 'text-blue-800' : ''}`}>
+              {message.name}
+            </div>
+            {message.messages.map((msg, msgIndex) => (
+              <div key={msgIndex}>{msg}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="mt-8 flex flex-row gap-4">
+        <InputEmoji
+          placeholder="Escribe un mensaje..."
+          value={newMessage}
+          onEnter={handleSendMessage}
+          onChange={setNewMessage}
+        />
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+          onClick={handleSendMessage}
+        >
+          <AiOutlineSend size={20} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const RoomGame = () => {
   const [socket, setSocket] = useState(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
@@ -182,19 +270,22 @@ const RoomGame = () => {
       );
     } else if (isGameStarted && gameResult === null) {
       return (
-        <div className='flex flex-col justify-center items-center gap-6'>
-          <h1 className='text-4xl font-bold text-white text-center'>TicTacToe Game</h1>
+        <div className='flex flex-col md:flex-row justify-center items-center gap-6'>
+          <div className='flex flex-col justify-center items-center gap-6'>
+            <h1 className='text-4xl font-bold text-white text-center'>TicTacToe Game</h1>
 
-          <div className='flex flex-col justify-center items-center gap-4 mb-4'>
-            <h3 className='text-2xl font-bold text-gray-300'>{name} vs {player2Name}</h3>
-          </div>
+            <div className='flex flex-col justify-center items-center gap-4 mb-4'>
+              <h3 className='text-2xl font-bold text-gray-300'>{name} vs {player2Name}</h3>
+            </div>
 
-          <div className="board">
-            {board.map((_, index) => renderCell(index))}
+            <div className="board">
+              {board.map((_, index) => renderCell(index))}
+            </div>
+            <div>
+              <p className='text-lg font-semibold text-gray-400'>Turno de: <span className='text-white font-bold'>{isMyTurn ? name : player2Name}</span></p>
+            </div>
           </div>
-          <div>
-            <p className='text-lg font-semibold text-gray-400'>Turno de: <span className='text-white font-bold'>{isMyTurn ? name : player2Name}</span></p>
-          </div>
+          <Chat websocket={socket} name={name} roomCode={roomCode} />
         </div>
       );
     } else {

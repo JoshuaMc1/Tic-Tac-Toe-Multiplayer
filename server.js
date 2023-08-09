@@ -65,6 +65,10 @@ io.on('connection', (socket) => {
         io.to(roomCode).emit('gameStart', { currentPlayer: currentPlayer });
     });
 
+    socket.on('chatMessage', ({ roomCode, name, message }) => {
+        io.to(roomCode).emit('receivedMessage', { name, message });
+    });
+
     socket.on('playerMove', ({ roomCode, newBoard }) => {
         if (!rooms[roomCode] || !rooms[roomCode].players) return;
 
